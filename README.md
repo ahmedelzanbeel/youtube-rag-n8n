@@ -503,9 +503,9 @@ Each major responsibility is isolated into a dedicated workflow section, making 
 
 # 🎬 Demo
 
-A complete demonstration of the YouTube RAG workflow is included in the project presentation.
+A full project demonstration will be added soon.
 
-The demo covers:
+The upcoming demo will cover:
 
 - Transcript ingestion
 - Transcript processing
@@ -513,8 +513,6 @@ The demo covers:
 - General RAG querying
 - Metadata-filtered querying
 - Transcript deletion
-
----
 
 # 👨‍💻 Author
 
