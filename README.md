@@ -10,26 +10,26 @@ It also includes a controlled **data deletion pipeline** that allows indexed vid
 
 ## ✨ Features
 
-- 🎬 Automated YouTube transcript extraction
-- 🧩 Transcript processing and chunking
-- ⏱️ Timestamp-aware document chunks
-- 🧠 Google Gemini embeddings
-- 🗄️ Supabase vector storage
-- 🔎 Semantic similarity search
-- 🎯 Cohere reranking for improved retrieval
-- 💬 Conversational YouTube RAG agent
-- 🏷️ Metadata-filtered retrieval for specific videos
-- 🔗 Source attribution using video metadata and timestamps
-- 📊 Google Sheets knowledge-base management
-- 🗑️ Controlled transcript/vector deletion
-- 🔄 Fully automated n8n workflow
-- 🔐 Credential-safe public workflow export
+- 🎬 **Automated YouTube Transcript Extraction** — Extracts full transcripts from YouTube videos.
+- 🧩 **Smart Processing & Chunking** — Processes transcript segments while preserving context.
+- ⏱️ **Timestamp-Aware Chunks** — Preserves precise start, end, and duration information.
+- 🧠 **Google Gemini Embeddings** — Converts transcript chunks into vector representations.
+- 🗄️ **Supabase Vector Storage** — Stores searchable transcript embeddings and metadata.
+- 🔎 **Semantic Similarity Search** — Retrieves relevant transcript content based on meaning.
+- 🎯 **Cohere Reranking** — Improves retrieval relevance before generation.
+- 💬 **Conversational YouTube RAG Agent** — Ask questions across the indexed video library.
+- 🏷️ **Metadata-Filtered Retrieval** — Restricts retrieval to a specific video.
+- 🔗 **Source Attribution** — Returns video titles, timestamps, and source URLs.
+- 📊 **Google Sheets Management** — Tracks indexed videos and their processing state.
+- 🗑️ **Controlled Data Cleanup** — Removes transcript vectors through a spreadsheet status update.
+- 🔄 **Fully Automated n8n Workflow** — Connects the complete ingestion, retrieval, and cleanup lifecycle.
+- 🔐 **Credential-Safe Design** — Public workflow export is sanitized of credentials and secrets.
 
 ---
 
-# 🏗️ System Architecture
+## 🏗️ System Architecture
 
-The system is organized into four major pipelines:
+The system is organized into four core pipelines:
 
 1. **Transcript Ingestion & Storage**
 2. **General YouTube RAG Agent**
@@ -37,76 +37,78 @@ The system is organized into four major pipelines:
 4. **Transcript Deletion & Cleanup**
 
 ```text
-                         ┌──────────────────────┐
-                         │    YouTube Video     │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │   n8n Form Trigger   │
-                         │   Title + Video URL  │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │   Apify Transcript   │
-                         │      Extraction      │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ Transcript Processing│
-                         │ Text + Timestamps    │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │  Gemini Embeddings   │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ Supabase Vector Store│
-                         │      documents       │
-                         └──────────┬───────────┘
-                                    │
-                      ┌─────────────┴─────────────┐
-                      │                           │
-                      ▼                           ▼
-             ┌──────────────────┐       ┌────────────────────┐
-             │  General RAG     │       │ Metadata Filter RAG│
-             │                  │       │                    │
-             │ Qwen + Retrieval │       │ Qwen + Filtered    │
-             │ + Reranking      │       │ Retrieval          │
-             └─────────┬────────┘       └──────────┬─────────┘
-                       │                           │
-                       └─────────────┬─────────────┘
-                                     ▼
-                            ┌──────────────────┐
-                            │   AI Response    │
-                            │ + Source Context │
-                            └──────────────────┘
+                     ┌──────────────────────┐
+                     │    YouTube Video     │
+                     └──────────┬───────────┘
+                                │
+                                ▼
+                     ┌──────────────────────┐
+                     │   n8n Form Trigger   │
+                     │   Title + Video URL  │
+                     └──────────┬───────────┘
+                                │
+                                ▼
+                     ┌──────────────────────┐
+                     │   Apify Transcript   │
+                     │      Extraction      │
+                     └──────────┬───────────┘
+                                │
+                                ▼
+                     ┌──────────────────────┐
+                     │ Transcript Processing│
+                     │ Text + Timestamps    │
+                     └──────────┬───────────┘
+                                │
+                                ▼
+                     ┌──────────────────────┐
+                     │   Gemini Embeddings  │
+                     └──────────┬───────────┘
+                                │
+                                ▼
+                     ┌──────────────────────┐
+                     │ Supabase Vector Store│
+                     │      documents       │
+                     └──────────┬───────────┘
+                                │
+                      ┌─────────┴─────────┐
+                      │                   │
+                      ▼                   ▼
+             ┌──────────────────┐ ┌────────────────────┐
+             │   General RAG    │ │ Metadata Filter RAG│
+             │ Qwen + Retrieval │ │  Qwen + Filtered   │
+             │   + Reranking    │ │     Retrieval      │
+             └────────┬─────────┘ └──────────┬─────────┘
+                      │                     │
+                      └──────────┬──────────┘
+                                 │
+                                 ▼
+                     ┌──────────────────────┐
+                     │     AI Response      │
+                     │   + Source Context   │
+                     └──────────────────────┘
+
+                         Google Sheets
+                               │
+                        Status = Remove
+                               │
+                               ▼
+                     ┌──────────────────┐
+                     │ Delete & Cleanup │
+                     └─────────┬────────┘
+                               │
+                               ▼
+                    Delete matching vectors
+                               │
+                               ▼
+                        Status = Removed
 
 
-                    Google Sheets
-                          │
-                    Status = Remove
-                          │
-                          ▼
-                 ┌───────────────────┐
-                 │ Delete & Cleanup  │
-                 └─────────┬─────────┘
-                           │
-                           ▼
-                  Delete matching vectors
-                           │
-                           ▼
-                    Status = Removed
-For the complete technical architecture:
-[Read the System Architecture](Documentation/architecture.md)
+📖 Deep Dive: For the complete technical documentation, see [`Documentation/architecture.md`](Documentation/architecture.md).
+
 🔄 1. Transcript Ingestion & Storage
-The ingestion pipeline transforms a YouTube video into structured, searchable knowledge.
-Workflow
+The ingestion pipeline transforms raw YouTube videos into structured, vector-indexed knowledge.
+Pipeline Flow
+
 On Form Submission
         │
         ▼
@@ -130,150 +132,83 @@ Get Transcript
                               │
                               ▼
                      Google Sheets
+
+
 Process
-The user submits:
-- Video Title
-- YouTube URL
-The workflow then:
-1. Sends the URL to the Apify transcript scraper.
-2. Extracts timestamped transcript segments.
-3. Normalizes the transcript text.
-4. Groups transcript segments into chunks.
-5. Calculates start and end timestamps.
-6. Adds video metadata.
-7. Generates vector embeddings using Google Gemini.
-8. Stores the documents in Supabase.
-9. Registers the indexed video in Google Sheets.
-🧩 Transcript Processing
-The workflow uses dedicated n8n Code nodes to process the extracted transcript.
-Transcript Processing
-The transcript is normalized by:
-- Removing unnecessary newlines
-- Trimming whitespace
-- Combining transcript segments
-- Normalizing repeated spaces
-Timestamp Processing
-Transcript segments are grouped into chunks of 20 segments.
-Each chunk contains:
-Text
-Start Timestamp
-End Timestamp
-Duration
-Formatted Timestamp
-Chunk Number
-Segment Count
-This allows retrieved content to remain connected to its original location in the YouTube video.
-🏷️ Metadata
-Every indexed transcript chunk contains metadata such as:
-videoTitle
-timestamp
-videoURL
-This metadata is important for:
-- Source attribution
-- Video-specific retrieval
-- Traceability
-- Vector deletion
-- Knowledge-base management
-Example:
-Video Title
-    │
-    ├── Timestamp
-    │
-    └── Video URL
+User Submission
+The user provides a video title and YouTube URL through an n8n Form.
+Transcript Extraction
+The URL is sent to the Apify transcript scraper.
+Processing
+Transcript segments are normalized and grouped into timestamp-aware chunks.
+Metadata Enrichment
+Each stored document includes:
+- videoTitle
+- timestamp
+- videoURL
+Vectorization
+Google Gemini converts transcript chunks into vector embeddings.
+Storage & Logging
+Embeddings are stored in Supabase, while Google Sheets maintains a lightweight index of processed videos.
+
 🧠 2. General YouTube RAG Agent
-The general RAG agent allows users to ask questions across the entire indexed YouTube knowledge base.
-Workflow
-Chat Message
-     │
-     ▼
-YouTube RAG Agent
-     │
-     ├──────────────► Qwen Cloud
-     │
-     └──────────────► Supabase
-                           │
-                           ▼
-                     Vector Search
-                           │
-                           ▼
-                       Reranker
-                           │
-                           ▼
-                    Relevant Chunks
-                           │
-                           ▼
-                     AI Response
-The agent is responsible for:
-- Understanding the user's question
-- Searching the vector database
-- Retrieving relevant transcript chunks
-- Using transcript metadata
-- Maintaining chronological context when required
-- Producing grounded answers
-The configured chat model is:
-qwen3.7-flash
-🎯 Retrieval & Reranking
-The general RAG pipeline uses semantic vector retrieval to identify relevant transcript chunks.
-The retrieval process is:
+The general RAG pipeline allows users to query the complete indexed YouTube knowledge base.
+Pipeline Flow
+
 User Query
     │
     ▼
-Gemini Embedding
+YouTube RAG Agent
     │
     ▼
-Vector Search
-    │
-    ▼
-Candidate Chunks
+Supabase Vector Search
     │
     ▼
 Cohere Reranker
     │
     ▼
-Relevant Context
+Relevant Transcript Chunks
     │
     ▼
-Qwen
+Qwen 3.7 Flash
     │
     ▼
-Final Answer
-The Cohere reranker re-evaluates retrieved candidates and improves the relevance of the context supplied to the language model.
+Grounded Response
+
+The agent retrieves relevant transcript chunks from Supabase and uses Cohere reranking to improve the relevance of the retrieved context before generating the final response with Qwen.
+Responses are grounded in retrieved transcript content and preserve source metadata such as video title, timestamp, and URL.
+
 🎥 3. Metadata-Filtered RAG Agent
-The second RAG pipeline is designed for questions about a specific YouTube video.
-The user provides:
-Video Title
-Query
-The selected title is used as metadata filtering criteria during vector retrieval.
-Workflow
+The metadata-filtered pipeline is designed for questions about a specific YouTube video.
+
+Pipeline Flow
+
 Video Insights Form
+(Video Title + Query)
         │
-        ├── Video Title
+        ▼
+     RAG Agent
         │
-        └── Query
-              │
-              ▼
-         RAG Agent 2
-              │
-              ├──────────► Qwen Cloud
-              │
-              └──────────► Supabase
-                                  │
-                                  ▼
-                         Metadata Filter
-                         videoTitle = selected
-                                  │
-                                  ▼
-                         Relevant Chunks
-                                  │
-                                  ▼
-                            AI Response
+        ▼
+Supabase Vector Store
+        │
+        ▼
+Filter: videoTitle
+        │
+        ▼
+Relevant Chunks
+        │
+        ▼
+    AI Response
+
 Why Metadata Filtering?
-Without filtering, similar content from different videos could be retrieved.
-Metadata filtering restricts the search to documents belonging to the selected video.
+When multiple videos contain similar topics or terminology, unrestricted retrieval can introduce context from unrelated videos.
+The metadata filter restricts retrieval to documents belonging to the selected video.
+
 All Documents
       │
       ▼
-Filter by Video Title
+Filter by videoTitle
       │
       ▼
 Selected Video
@@ -283,105 +218,50 @@ Semantic Retrieval
       │
       ▼
 Relevant Context
-This is particularly useful when multiple videos discuss similar subjects.
-🔗 Source Attribution
-The RAG agents are instructed to preserve the metadata associated with retrieved transcript chunks.
-Responses can reference:
-- Video title
-- Exact timestamp
-- Original video URL
-The goal is to maintain a clear relationship between:
-User Question
-      ↓
-Retrieved Transcript Chunk
-      ↓
-Source Metadata
-      ↓
-Original YouTube Video
-      ↓
-Exact Timestamp
-This improves transparency and makes the generated answers easier to verify.
+
+This provides more precise video-specific answers and reduces cross-video context mixing.
+
 🗑️ 4. Transcript Deletion & Cleanup
-The system includes a complete data lifecycle mechanism for removing indexed videos.
-A video can be deleted by changing its status in Google Sheets.
-Workflow
+The deletion pipeline provides lifecycle management for indexed transcripts.
+
+Pipeline Flow
+
+Google Sheets
+Status = "Remove"
+        │
+        ▼
 Google Sheets Trigger
         │
         ▼
-      Filter
-        │
-        │ Status = Remove
-        ▼
- Loop Over Items
+Filter
         │
         ▼
-   Edit Fields
+Loop Over Items
         │
         ▼
- Delete matching vectors
+Extract Video URL
         │
         ▼
- Update Google Sheets
+Delete Matching Supabase Vectors
         │
         ▼
-    Status = Removed
-Deletion Process
-1. Google Sheets detects a row update.
-2. The workflow checks the Status field.
-3. Only rows with Remove continue.
-4. The video URL is extracted.
-5. Matching transcript documents are identified using metadata.
-6. The associated records are deleted from Supabase.
-7. The spreadsheet status is changed to Removed.
-This provides controlled lifecycle management for indexed content.
-📊 Data Lifecycle
-The complete lifecycle of an indexed YouTube video is:
-YouTube URL
-     │
-     ▼
-Transcript Extraction
-     │
-     ▼
-Text Processing
-     │
-     ▼
-Chunking + Timestamps
-     │
-     ▼
-Metadata Enrichment
-     │
-     ▼
-Gemini Embeddings
-     │
-     ▼
-Supabase Vector Store
-     │
-     ├──────────────► General RAG
-     │
-     └──────────────► Metadata-Filtered RAG
+Update Google Sheets
+Status = "Removed"
 
 
-Google Sheets
-     │
-     │ Status = Remove
-     ▼
-Vector Deletion
-     │
-     ▼
-Status = Removed
+The video URL is used to identify the transcript documents stored in Supabase.
+After successful deletion, the corresponding spreadsheet row is updated from Remove to Removed.
 🧰 Technology Stack
 Layer	Technology
 Workflow Automation	n8n
 Transcript Extraction	Apify
-Language Model	Qwen Cloud
-Chat Model	qwen3.7-flash
+LLM	Qwen Cloud — qwen3.7-flash
 Embeddings	Google Gemini
-Vector Database	Supabase
+Vector Database	Supabase + pgvector
 Reranking	Cohere
-Data Management	Google Sheets
-Retrieval Architecture	RAG
-Data Processing	n8n Code Nodes
-Metadata Filtering	Supabase Vector Store
+Knowledge Base Management	Google Sheets
+Data Processing	JavaScript / n8n Code Nodes
+Architecture	Retrieval-Augmented Generation (RAG)
 
 
 📸 Screenshots
@@ -391,11 +271,12 @@ Transcript Ingestion Pipeline
 
 General RAG Agent
 
-Metadata-Filtered RAG
+Metadata-Filtered RAG Agent
 
 Delete & Cleanup Pipeline
 
 📁 Project Structure
+
 youtube-rag-n8n/
 │
 ├── Workflow/
@@ -414,182 +295,78 @@ youtube-rag-n8n/
 ├── README.md
 ├── .gitignore
 └── .env.example
-⚙️ Setup
+
+
+⚙️ Setup & Installation
 Prerequisites
-You will need:
-- n8n
-- Supabase project
-- Apify account
-- Google account
-- Google Sheets
-- Google Gemini API access
+Before importing the workflow, make sure you have:
+- An active n8n instance
+- A Supabase project with pgvector enabled
+- An Apify account and API token
+- Google Cloud / Gemini API access
+- Google Sheets OAuth credentials
 - Qwen Cloud API access
 - Cohere API access
+Quick Start
 1. Import the Workflow
-Import the following file into your n8n instance:
+Import:
+
 Workflow/youtube-rag-n8n.json
+nto your n8n instance.
+
 2. Configure Credentials
-Create the required credentials inside n8n for:
+Configure the required n8n credentials for:
 - Apify
 - Supabase
 - Google Sheets
 - Google Gemini
 - Qwen Cloud
 - Cohere
-Then assign the credentials to their corresponding nodes.
-Credentials are not included in this repository.
+3. Configure Supabase
+Create and configure the required documents table with vector support.
+The vector store is used to store:
+- Transcript content
+- Embeddings
+- Video metadata
+- Timestamp information
+4. Configure Google Sheets
+Create a tracking sheet with:
 
-3. Configure Apify
-The Get Transcript HTTP Request node uses an Apify YouTube transcript scraper.
-Add your own Apify API token through your n8n credentials/environment configuration.
-The public workflow contains a placeholder instead of a real token.
-4. Configure Supabase
-Create/configure the Supabase vector database used by the workflow.
-The workflow expects a table named:
-documents
-The table stores:
-- Document content
-- Embeddings
-- Metadata
-The metadata includes:
-videoTitle
-timestamp
-videoURL
-5. Configure Google Sheets
-Create a Google Sheet for indexed videos.
-The workflow uses columns such as:
-Title
-URL
-Status
-Transcript
-The spreadsheet serves as a lightweight management layer for the knowledge base.
-To remove a video:
-Status = Remove
-After successful cleanup:
-Status = Removed
-6. Configure AI Models
-Embeddings
-Google Gemini Embeddings
-Used to convert transcript chunks into vector representations.
-Chat Model
-Qwen Cloud
-qwen3.7-flash
-Used by the RAG agents to generate grounded responses.
-Reranker
-Cohere Reranker
-Used by the general RAG pipeline to improve retrieval relevance.
-▶️ Usage
-Add a YouTube Video
-Open the YouTube Database Submission form.
-Enter:
-Video Title
-YouTube URL
-Submit the form.
-The workflow automatically:
-Extract Transcript
-       ↓
-Process Transcript
-       ↓
-Create Timestamped Chunks
-       ↓
-Generate Embeddings
-       ↓
-Store in Supabase
-       ↓
-Register Video in Google Sheets
-Ask Questions Across the Knowledge Base
-Use the chat interface connected to the:
-YouTube RAG Agent
-You can ask questions about the indexed videos.
-The agent retrieves relevant transcript chunks and generates an answer based on the retrieved context.
-Ask Questions About One Specific Video
-Open the:
-Video Insights
-form.
-Enter:
-Video Title
-Query
-The metadata filter restricts retrieval to the selected video.
-Remove an Indexed Video
-Open the Google Sheets database and change the video's status to:
-Remove
-The deletion pipeline will:
-Find matching vectors
-       ↓
-Delete vectors
-       ↓
-Update spreadsheet
-       ↓
-Status = Removed
+Title | URL | Status | Transcript
+
+The Status column is used by the deletion pipeline.
 🔐 Security
-This repository is intended for public sharing.
-Sensitive credentials must never be committed to GitHub.
-Do not commit:
-API Keys
-Access Tokens
-OAuth Tokens
-Passwords
-Database Secrets
-Service Account Private Keys
-The exported workflow uses placeholders such as:
-YOUR_APIFY_API_TOKEN_HERE
-YOUR_GOOGLE_SHEET_ID
-Configure your own credentials locally inside n8n.
-📚 Documentation
-Detailed technical documentation is available here:
-[System Architecture →](Documentation/architecture.md)
-The documentation covers:
-- System architecture
-- Transcript processing
-- Chunking strategy
-- Metadata design
-- Embeddings
-- Vector retrieval
-- Reranking
-- Metadata filtering
-- Deletion pipeline
-- Data lifecycle
-- Technology stack
-- Design principles
-🎬 Demo
-A complete project demonstration will be added here.
-The demo will cover the complete lifecycle:
-YouTube Video
-      ↓
-Transcript Extraction
-      ↓
-Vector Indexing
-      ↓
-General RAG Query
-      ↓
-Metadata-Filtered Query
-      ↓
-Timestamp-Based Source
-      ↓
-Video Deletion
+The published workflow is sanitized for public sharing.
+- No API keys or access tokens are included.
+- Credential references are removed from the public workflow export.
+- Sensitive values are replaced with placeholders.
+- Google Sheet IDs and API tokens are represented using placeholders.
+- Local environment files and credential files are excluded through .gitignore.
+Note: Credentials must be configured separately inside your own n8n instance.
+
 🧠 Design Principles
 Grounded Generation
-The RAG agents are instructed to rely on retrieved transcript content instead of unsupported information.
+Prompts are designed to keep responses grounded in retrieved transcript context and avoid unsupported claims.
 Source Traceability
-Transcript chunks retain video title, timestamp, and URL metadata.
+Transcript chunks retain video title, timestamp, and URL metadata so generated answers can be traced back to the original source.
 Metadata-Aware Retrieval
-The system can restrict retrieval to a specific YouTube video.
+The system can restrict retrieval to a specific video when precise video-level querying is required.
 Retrieval Quality
-The general RAG pipeline uses reranking to improve the relevance of retrieved chunks.
+The general RAG pipeline uses reranking to improve the relevance of retrieved transcript chunks.
 Data Lifecycle Management
-Indexed videos can be removed from the vector database through a controlled workflow.
+Indexed videos can be removed from the vector database through a controlled Google Sheets workflow.
 Modular Architecture
-Each responsibility is separated into a dedicated section of the n8n workflow, making the system easier to understand, maintain, and extend.
+Each major responsibility is isolated into a dedicated workflow section, making the system easier to understand, maintain, and extend.
+
 👨‍💻 Author
 Ahmed Gabr Elzanbeel
 AI Automation & Integration Engineer
-Focused on building:
+Specializing in:
 - AI Agents
 - RAG Systems
 - n8n Workflow Automation
-- API Integrations
-- AI-powered Automation
-- Intelligent Business Workflows
-⭐ Project
-If you find this project useful, consider giving it a ⭐ on GitHub.
-Built with n8n + RAG + Supabase + Gemini + Qwen + Cohere.
+- API & Workflow Integrations
+- AI Automation
+
+⭐ Support
+If you find this project useful, consider giving the repository a ⭐ on GitHub.
