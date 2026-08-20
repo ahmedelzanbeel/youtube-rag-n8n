@@ -405,11 +405,13 @@ Before importing the workflow, make sure you have:
 
 ## 1. Import the Workflow
 
-Import the following file into your n8n instance:
+Import the workflow into your n8n instance:
 
-```text
-Workflow/youtube-rag-n8n.json
-```
+👉 [Open the YouTube RAG Workflow](Workflow/youtube-rag-n8n.json)
+
+Download the JSON file and import it into n8n using:
+
+**Workflow → Import from File**
 
 ## 2. Configure Credentials
 
