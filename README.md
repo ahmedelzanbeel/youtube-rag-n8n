@@ -76,6 +76,8 @@ Get Transcript
                               │
                               ▼
                      Google Sheets
+
+
 Process
 User Submission
 The user provides a video title and YouTube URL through an n8n Form.
@@ -92,7 +94,7 @@ Vectorization
 Google Gemini converts transcript chunks into vector embeddings.
 Storage & Logging
 Embeddings are stored in Supabase, while Google Sheets maintains a lightweight index of processed videos.
-Workflow Screenshot
+
 
 🧠 2. General YouTube RAG Agent
 The general RAG pipeline allows users to query the complete indexed YouTube knowledge base.
@@ -118,7 +120,9 @@ Qwen 3.7 Flash
 Grounded Response
 The agent retrieves relevant transcript chunks from Supabase and uses Cohere reranking to improve context relevance before generating the final response with Qwen.
 Responses are grounded in retrieved transcript content and preserve source metadata such as video title, timestamp, and URL.
+
 Workflow Screenshot
+
 
 🎥 3. Metadata-Filtered RAG Agent
 The metadata-filtered pipeline is designed for questions about a specific YouTube video.
@@ -140,9 +144,11 @@ Relevant Chunks
         │
         ▼
     AI Response
+
 Why Metadata Filtering?
 When multiple videos contain similar topics or terminology, unrestricted retrieval can introduce context from unrelated videos.
 The metadata filter restricts retrieval to documents belonging to the selected video.
+
 All Documents
       │
       ▼
@@ -156,6 +162,7 @@ Semantic Retrieval
       │
       ▼
 Relevant Context
+
 This provides more precise video-specific answers and reduces cross-video context mixing.
 Workflow Screenshot
 
@@ -163,6 +170,7 @@ Workflow Screenshot
 The deletion pipeline provides lifecycle management for indexed transcripts.
 Workflow
 Google Sheets
+
 Status = "Remove"
         │
         ▼
@@ -182,6 +190,7 @@ Delete Matching Supabase Vectors
         │
         ▼
 Update Google Sheets
+
 Status = "Removed"
 The video URL is used to identify the transcript documents stored in Supabase.
 After successful deletion, the corresponding spreadsheet row is updated from Remove to Removed.
@@ -219,6 +228,7 @@ youtube-rag-n8n/
 ├── README.md
 ├── .gitignore
 └── .env.example
+
 ⚙️ Setup & Installation
 Prerequisites
 Before importing the workflow, make sure you have:
@@ -253,6 +263,7 @@ The vector store is used to store:
 Create a tracking sheet with the following columns:
 Title | URL | Status | Transcript
 The Status column is used by the deletion pipeline.
+
 🔐 Security
 The published workflow is sanitized for public sharing.
 - No API keys or access tokens are included.
@@ -275,6 +286,7 @@ Data Lifecycle Management
 Indexed videos can be removed from the vector database through a controlled Google Sheets workflow.
 Modular Architecture
 Each major responsibility is isolated into a dedicated workflow section, making the system easier to understand, maintain, and extend.
+
 👨‍💻 Author
 Ahmed Gabr Elzanbeel
 AI Automation & Integration Engineer
