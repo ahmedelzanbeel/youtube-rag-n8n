@@ -1,47 +1,90 @@
-# Environment variables
+# ==========================================
+# Environment Variables
+# ==========================================
 .env
 .env.*
 !.env.example
 
-# Credentials and secrets
+# ==========================================
+# Credentials & Secrets
+# ==========================================
 credentials.json
 service-account.json
 *-credentials.json
 secrets.json
+*.pem
+*.key
+*.p12
 
-# n8n local data
+# ==========================================
+# n8n Local Data
+# ==========================================
 .n8n/
 n8n_data/
 
+# ==========================================
 # Logs
+# ==========================================
 *.log
 logs/
 
-# Operating system files
+# ==========================================
+# Operating System Files
+# ==========================================
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# IDE / Editor files
+# ==========================================
+# IDE / Editor Files
+# ==========================================
 .vscode/
 .idea/
 
-# Temporary files
+# ==========================================
+# Temporary Files
+# ==========================================
 *.tmp
 *.temp
 *.bak
 *.swp
+*.swo
+*~
 
+# ==========================================
 # Node.js
+# ==========================================
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
+# ==========================================
 # Python
+# ==========================================
 __pycache__/
-*.pyc
+*.py[cod]
 .venv/
 venv/
+env/
 
-# Local exports and backups
+# ==========================================
+# Local Exports & Backups
+# ==========================================
 backup/
 backups/
 exports/
+
+# ==========================================
+# Database / Local Storage
+# ==========================================
+*.sqlite
+*.sqlite3
+*.db
+
+# ==========================================
+# OS / Application Metadata
+# ==========================================
+.DS_Store
+.Trashes
