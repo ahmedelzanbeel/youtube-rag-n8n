@@ -153,14 +153,6 @@ Vectorization
 Google Gemini converts transcript chunks into vector embeddings.
 Storage & Logging
 Embeddings are stored in Supabase, while Google Sheets maintains a lightweight index of processed videos.
-## 🔄 1. Transcript Ingestion & Storage
-
-...
-
-### Workflow
-
-On Form Submission → Get Transcript → Processing → Embeddings → Supabase → Google Sheets
-
 ![Transcript Ingestion Pipeline](Screenshots/transcript-pipeline.png)
 
 
@@ -190,10 +182,6 @@ Grounded Response
 
 The agent retrieves relevant transcript chunks from Supabase and uses Cohere reranking to improve the relevance of the retrieved context before generating the final response with Qwen.
 Responses are grounded in retrieved transcript content and preserve source metadata such as video title, timestamp, and URL.
-## 🧠 2. General YouTube RAG Agent
-
-...
-
 ![General YouTube RAG Agent](Screenshots/rag-agent.png)
 
 🎥 3. Metadata-Filtered RAG Agent
@@ -238,11 +226,6 @@ Semantic Retrieval
 Relevant Context
 
 This provides more precise video-specific answers and reduces cross-video context mixing.
-
-## 🎥 3. Metadata-Filtered RAG Agent
-
-...
-
 ![Metadata-Filtered RAG Agent](Screenshots/metadata-filter-rag.png)
 
 🗑️ 4. Transcript Deletion & Cleanup
@@ -286,12 +269,7 @@ Reranking	Cohere
 Knowledge Base Management	Google Sheets
 Data Processing	JavaScript / n8n Code Nodes
 Architecture	Retrieval-Augmented Generation (RAG)
-## 🗑️ 4. Transcript Deletion & Cleanup
-
-...
-
 ![Transcript Deletion Pipeline](Screenshots/delete-pipeline.png)
-
 
 📁 Project Structure
 
