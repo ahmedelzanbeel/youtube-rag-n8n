@@ -38,16 +38,16 @@ The workflow is organized into four main pipelines:
 
 ## Complete Workflow
 
-![Complete YouTube RAG Workflow](Screenshots/workflow-overview.png)
+![Complete YouTube RAG Workflow](./Screenshots/workflow-overview.png)
 
 The complete workflow connects transcript extraction, processing, embeddings, vector storage, retrieval, metadata filtering, reranking, and controlled deletion.
 
 📖 **Detailed technical architecture:**  
-[Documentation → System Architecture](Documentation/architecture.md)
+[Documentation → System Architecture](./Documentation/architecture.md)
 
 ---
 
-## 🔄 1. Transcript Ingestion & Storage
+# 🔄 1. Transcript Ingestion & Storage
 
 The ingestion pipeline transforms a YouTube video into structured, searchable knowledge.
 
@@ -82,7 +82,8 @@ Get Transcript
                             ▼
                     Google Sheets
 
-##How It Works
+
+How It Works
 1. Video Submission
 
 The user provides:
@@ -92,7 +93,7 @@ YouTube URL
 
 through an n8n Form Trigger.
 
-##2. Transcript Extraction
+2. Transcript Extraction
 
 The YouTube URL is sent to an Apify transcript scraper.
 
@@ -101,8 +102,7 @@ The scraper returns timestamped transcript segments containing:
 Transcript text
 Start time
 Duration
-
-##3. Transcript Processing
+3. Transcript Processing
 
 The workflow processes the transcript through dedicated n8n Code nodes.
 
@@ -115,18 +115,15 @@ Start timestamp
 End timestamp
 Duration
 Chunk number
-
-##4. Metadata Enrichment
+4. Metadata Enrichment
 
 Each stored document contains metadata including:
-
 videoTitle
 timestamp
 videoURL
-
 This metadata enables source attribution and video-specific retrieval.
 
-##5. Vectorization
+5. Vectorization
 
 Google Gemini converts transcript chunks into vector embeddings.
 
@@ -138,15 +135,16 @@ Gemini Embedding Model
       ▼
 Vector Representation
 
-##6. Storage
+
+6. Storage
 
 The generated embeddings and metadata are stored in the Supabase documents table.
 
 Google Sheets maintains a lightweight index of processed videos.
 
-Ingestion Pipeline Screenshot
+Ingestion Pipeline
 
-##🧠 2. General YouTube RAG Agent
+🧠 2. General YouTube RAG Agent
 
 The general RAG pipeline allows users to query the entire indexed YouTube knowledge base.
 
@@ -180,9 +178,9 @@ The final response is generated using the Qwen chat model.
 
 The agent is designed to ground responses in retrieved transcript content and preserve source metadata.
 
-RAG Agent Screenshot
+RAG Agent
 
-##🎯 3. Metadata-Filtered RAG Agent
+🎯 3. Metadata-Filtered RAG Agent
 
 The metadata-filtered pipeline is designed for questions about a specific YouTube video.
 
@@ -208,7 +206,8 @@ Video Insights Form
                                 ▼
                           AI Response
 
-##Why Metadata Filtering?
+
+Why Metadata Filtering?
 
 When multiple videos contain similar topics or terminology, unrestricted retrieval can introduce context from unrelated videos.
 
@@ -228,11 +227,13 @@ Semantic Retrieval
       ▼
 Relevant Context
 
+
 This provides more precise video-specific answers and reduces cross-video context mixing.
 
-Metadata Filter Screenshot
+Metadata-Filtered RAG
 
-##🗑️ 4. Transcript Deletion & Cleanup
+
+🗑️ 4. Transcript Deletion & Cleanup
 
 The deletion pipeline provides lifecycle management for indexed transcripts.
 
@@ -266,17 +267,15 @@ Status = "Removed"
 The video URL is used to identify the transcript documents stored in Supabase.
 
 After deletion, the spreadsheet status is updated from:
-
 Remove
-
 to:
-
 Removed
-Delete Pipeline Screenshot
+Delete Pipeline
 
-##🔁 Data Lifecycle
+🔁 Data Lifecycle
 
 The complete lifecycle of an indexed YouTube video is:
+
 
 YouTube URL
      │
@@ -301,8 +300,8 @@ Supabase Vector Store
      ├──────────────► General RAG
      │
      └──────────────► Metadata-Filtered RAG
-     
-     
+
+
 Google Sheets
      │
      │ Status = Remove
@@ -312,19 +311,21 @@ Vector Deletion
      ▼
 Status = Removed
 
-##🧰 Technology Stack
-Layer	Technology
-Workflow Automation	n8n
-Transcript Extraction	Apify
-LLM	Qwen Cloud — qwen3.7-flash
-Embeddings	Google Gemini
-Vector Database	Supabase + pgvector
-Reranking	Cohere
-Knowledge Base Management	Google Sheets
-Data Processing	JavaScript / n8n Code Nodes
-Architecture	Retrieval-Augmented Generation (RAG)
 
-##📁 Project Structure
+| Layer                     | Technology                           |
+| ------------------------- | ------------------------------------ |
+| Workflow Automation       | n8n                                  |
+| Transcript Extraction     | Apify                                |
+| LLM                       | Qwen Cloud — qwen3.7-flash           |
+| Embeddings                | Google Gemini                        |
+| Vector Database           | Supabase + pgvector                  |
+| Reranking                 | Cohere                               |
+| Knowledge Base Management | Google Sheets                        |
+| Data Processing           | JavaScript / n8n Code Nodes          |
+| Architecture              | Retrieval-Augmented Generation (RAG) |
+
+📁 Project Structure
+
 youtube-rag-n8n/
 │
 ├── Workflow/
@@ -344,7 +345,8 @@ youtube-rag-n8n/
 ├── .gitignore
 └── .env.example
 
-##⚙️ Setup & Installation
+
+⚙️ Setup & Installation
 Prerequisites
 
 Before importing the workflow, make sure you have:
@@ -356,15 +358,12 @@ Google Gemini API access
 Google Sheets OAuth credentials
 Qwen Cloud API access
 Cohere API access
-#1. Import the Workflow
+1. Import the Workflow
 
-Import:
-
+Import the following file into your n8n instance:
 Workflow/youtube-rag-n8n.json
 
-into your n8n instance.
-
-#2. Configure Credentials
+2. Configure Credentials
 
 Configure the required n8n credentials for:
 
@@ -374,7 +373,7 @@ Google Sheets
 Google Gemini
 Qwen Cloud
 Cohere
-#3. Configure Supabase
+3. Configure Supabase
 
 Create and configure the required documents table with vector support.
 
@@ -384,27 +383,32 @@ Transcript content
 Embeddings
 Video metadata
 Timestamp information
-#4. Configure Google Sheets
+4. Configure Google Sheets
 
-Create a tracking sheet with:
-
-Title	URL	Status	Transcript
+Create a tracking sheet with the following columns:
+| Title | URL | Status | Transcript |
+| ----- | --- | ------ | ---------- |
 
 The Status column is used by the deletion pipeline.
+Use:Remove
+  to trigger deletion.
 
-##🔐 Security
+After successful deletion, the workflow changes the status to:Removed
+
+🔐 Security
 
 The published workflow is sanitized for public sharing.
 
 No API keys or access tokens are included.
 Sensitive configuration values are replaced with placeholders.
-Google Sheet IDs and API tokens use placeholders.
+Google Sheet IDs use placeholders.
+API tokens use placeholders.
 .gitignore excludes local environment and credential files.
 Credentials must be configured separately inside your own n8n instance.
 
 ⚠️ Never commit API keys, access tokens, passwords, OAuth secrets, or service-account credentials to the repository.
 
-##🧠 Design Principles
+🧠 Design Principles
 Grounded Generation
 
 RAG agents are instructed to rely on retrieved transcript content and avoid unsupported claims.
@@ -429,7 +433,7 @@ Modular Architecture
 
 Each major responsibility is isolated into a dedicated workflow section, making the system easier to understand, maintain, and extend.
 
-##🎬 Demo
+🎬 Demo
 
 A complete demonstration of the YouTube RAG workflow is included in the project presentation.
 
@@ -441,15 +445,13 @@ Vector storage
 General RAG querying
 Metadata-filtered querying
 Transcript deletion
-
-##👨‍💻 Author
+👨‍💻 Author
 
 Ahmed Gabr Elzanbeel
 
 AI Automation & Integration Engineer
 
-Specializing in:
-
+Specializing in
 AI Agents
 RAG Systems
 n8n Workflow Automation
@@ -458,3 +460,6 @@ AI Automation
 ⭐ Support
 
 If you find this project useful, consider giving the repository a ⭐ on GitHub.
+
+
+
