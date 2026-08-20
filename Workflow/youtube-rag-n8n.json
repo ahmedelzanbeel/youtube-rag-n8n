@@ -1,0 +1,716 @@
+{
+  "name": "YouTube Chat Metadata",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "YouTube Database Submission",
+        "formDescription": "Drop in a YouTube video URL",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Video Title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "URL",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -688,
+        -320
+      ],
+      "id": "73d8082b-6e3d-48ba-bb52-7af7d2954762",
+      "name": "On form submission"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/pintostudio~youtube-transcript-scraper/run-sync-get-dataset-items",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "YOUR_APIFY_API_TOKEN_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "videoUrl",
+              "value": "={{ $json.URL }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -512,
+        -320
+      ],
+      "id": "beda087c-8c56-4a1d-bf6e-d32f81303d6c",
+      "name": "Get Transcript"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        -304
+      ],
+      "id": "078f93e7-12d3-4a11-9bc8-38eca4d42f2a",
+      "name": "Supabase Vector Store"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Merge').item.json.text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "videoTitle",
+                "value": "={{ $('On form submission').first().json['Video Title'] }}"
+              },
+              {
+                "name": "timestamp",
+                "value": "={{ $('Timestamps').item.json.timestamp.startFormatted }} → {{ $('Timestamps').item.json.timestamp.endFormatted }} ({{ $('Timestamps').item.json.timestamp.durationFormatted }})"
+              },
+              {
+                "name": "videoURL",
+                "value": "={{ $('On form submission').item.json.URL }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        -112
+      ],
+      "id": "2dc4e5f7-eedc-4716-9f0f-ff50bb65fd9b",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to search through YouTube transcripts to answer the user's question.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 20,
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        -720
+      ],
+      "id": "85b816a2-046f-4b27-a7bb-6d48e8074a91",
+      "name": "Supabase"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "YouTube Videos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $('On form submission').item.json['Video Title'] }}",
+            "URL": "={{ $('On form submission').item.json.URL }}",
+            "Transcript": "={{ $('Transcript').item.json.combinedText }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        400,
+        -304
+      ],
+      "id": "7a01c849-e910-45fd-8b80-d8e4ea759ccc",
+      "name": "Append row in sheet",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Combine transcript text into one string (no newlines)\n\nconst inputData = $input.all()[0].json;\nconst transcriptData = inputData.data;\n\nconst combinedText = transcriptData\n  .filter(item => item.text)\n  .map(item => item.text.trim().replace(/\\n/g, ' '))\n  .join(' ')\n  .replace(/\\s+/g, ' ');\n\nreturn [\n  {\n    json: {\n      combinedText: combinedText,\n      originalItemCount: transcriptData.length,\n      textSegmentCount: transcriptData.filter(item => item.text).length\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        -400
+      ],
+      "id": "2febe423-3189-4b86-adbf-a603e2c86cb3",
+      "name": "Transcript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Group transcript into chunks of 20 with timestamps\n\nconst inputData = $input.all()[0].json;\nconst transcriptData = inputData.data.filter(item => item.text);\n\nconst chunkSize = 20;\nconst chunks = [];\n\nfor (let i = 0; i < transcriptData.length; i += chunkSize) {\n  const chunk = transcriptData.slice(i, i + chunkSize);\n\n  const combinedText = chunk\n    .map(item => item.text.trim())\n    .join(' ');\n\n  const firstItem = chunk[0];\n  const lastItem = chunk[chunk.length - 1];\n\n  const startTime = parseFloat(firstItem.start);\n  const endTime = parseFloat(lastItem.start) + parseFloat(lastItem.dur);\n\n  const formatTime = (seconds) => {\n    if (seconds < 60) {\n      return `${seconds.toFixed(3)}s`;\n    }\n\n    const minutes = Math.floor(seconds / 60);\n    const remainingSeconds = seconds % 60;\n\n    return `${minutes}:${remainingSeconds.toFixed(3).padStart(6, '0')}`;\n  };\n\n  chunks.push({\n    json: {\n      text: combinedText,\n      timestamp: {\n        start: startTime,\n        end: endTime,\n        duration: endTime - startTime,\n        startFormatted: formatTime(startTime),\n        endFormatted: formatTime(endTime),\n        durationFormatted: formatTime(endTime - startTime)\n      },\n      itemCount: chunk.length,\n      chunkNumber: Math.floor(i / chunkSize) + 1\n    }\n  });\n}\n\nreturn chunks;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        -176
+      ],
+      "id": "d987fe5e-749f-48b5-84b5-e7d017ac2e16",
+      "name": "Timestamps"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -112,
+        -304
+      ],
+      "id": "7bcea790-556f-4a32-8315-ade91ef4f3f4",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "YouTube Videos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "event": "rowUpdate",
+        "options": {
+          "columnsToWatch": [
+            "Status"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        224
+      ],
+      "id": "a974276d-347a-44ff-8ecf-f57eb31859b6",
+      "name": "Google Sheets Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dd6297c2-fadf-440d-aa41-5a3772767cca",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Remove",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -448,
+        224
+      ],
+      "id": "25b4987f-ceab-4cb2-878c-0858876b4385",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "documents",
+        "filterType": "string",
+        "filterString": "=metadata->>videoURL=like.*{{ $json.url }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        160,
+        240
+      ],
+      "id": "c3b25146-f89c-4ae7-883c-445853b20171",
+      "name": "Delete a row",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "YouTube Videos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $('Edit Fields').item.json.url }}",
+            "Status": "Removed"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        336,
+        240
+      ],
+      "id": "0b213ec5-6ee0-4a12-94a7-0aaf396fd217",
+      "name": "Update row in sheet",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a819cb4c-30ff-4d23-b176-a2d7a77f91e9",
+              "name": "url",
+              "value": "={{ $json.URL }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        240
+      ],
+      "id": "47557a91-7930-413c-9455-7ae996f3d4c4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        224
+      ],
+      "id": "e315cb33-ede4-405d-b058-ae15b7753b30",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Query }} from {{ $json['Video Title'] }}",
+        "options": {
+          "systemMessage": "You are an AI assistant with access to a Supabase database containing YouTube transcripts.\n\nAnswer using only the retrieved transcript chunks and their metadata.\n\nFor every fact or quote, cite the exact:\n(Video Title, exact timestamp — Watch here)\n\nUse the timestamp and video URL exactly as provided in the metadata. Never invent, change, round, or estimate them.\n\nDo not add information that is not present in the retrieved transcript.\n\nIf the retrieved chunks do not contain enough information, say so instead of guessing."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -800
+      ],
+      "id": "24fa450e-b3b1-4156-a9c2-fc804ff7b377",
+      "name": "RAG Agent 2"
+    },
+    {
+      "parameters": {
+        "formTitle": "Video Insights",
+        "formDescription": "Specify the YouTube Video you want insights from",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Video Title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Query",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        -800
+      ],
+      "id": "1c1542eb-b4ac-4116-8e8c-e53a9d1057e4",
+      "name": "On form submission1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to search through YouTube transcripts to answer the user's question.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "videoTitle",
+                "value": "={{ $('On form submission1').item.json['Video Title'] }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        -688
+      ],
+      "id": "fb5e7fd6-d7f5-45ca-bace-012d4307f4ee",
+      "name": "Supabase Vector Store1"
+    },
+    {
+      "parameters": {
+        "content": "# YouTube Transcript RAG Agent\n",
+        "height": 460,
+        "width": 1120,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -944
+      ],
+      "id": "3cf6921b-1fad-4bc9-9616-b6b50d89e650",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# YouTube Transcript RAG Agent\n## w/ metadata filter\n",
+        "height": 460,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -944
+      ],
+      "id": "283785e7-0b28-4ba0-82f7-e02635f06221",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Transcript Pipeline",
+        "height": 480,
+        "width": 1300,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        -464
+      ],
+      "id": "be1a6403-86ff-4c58-a642-720eff739a0f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Transcript Pipeline\n## Delete",
+        "height": 480,
+        "width": 1300,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        96
+      ],
+      "id": "a349634f-928e-4a18-bc53-d087d367dee5",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -608
+      ],
+      "id": "8681c523-903c-4446-b3a0-b6905d889cad",
+      "name": "Reranker"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "# Overview\nYou are an AI assistant with access to a Supabase tool containing YouTube video transcripts.\n\nWhen answering, use Supabase to retrieve the relevant transcript chunks and their metadata. You may query Supabase multiple times when needed.\n\nFor transcript requests:\n- If the relevant video is already available in the retrieved results, do not ask the user for its title or URL again.\n- Retrieve the relevant chunks, keep them in chronological order, and use the exact timestamps from the metadata.\n- Never invent, round, or modify timestamps.\n- For full-transcript requests, retrieve as many relevant chunks as needed and do not summarize or omit content.\n\nFor every factual answer, cite the video title, exact timestamp, and video URL from the metadata using:\n“quoted content” (Video Title, 03:12 — Watch here)\n\nQuery Supabase iteratively until you have enough context to answer accurately."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -864
+      ],
+      "id": "b5ba9e0d-01c2-4934-a762-0e324e695e67",
+      "name": "YouTube RAG Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -624
+      ],
+      "id": "dd89d023-2807-4b10-a402-85b375cb490b",
+      "name": "Embeddings Google Gemini"
+    },
+    {
+      "parameters": {
+        "model": "qwen3.7-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAlibabaCloud",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -656
+      ],
+      "id": "95e42679-f445-4e9a-b1fb-b8d10c32d3db",
+      "name": "Qwen Cloud Chat Model1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -128
+      ],
+      "id": "ac0bd1bc-ce2a-4040-b50a-ef29be87689c",
+      "name": "Embeddings Google Gemini1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -608
+      ],
+      "id": "d84d933b-9858-45b0-9a3b-624f263a85c6",
+      "name": "Embeddings Google Gemini2"
+    },
+    {
+      "parameters": {
+        "model": "qwen3.7-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAlibabaCloud",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -624
+      ],
+      "id": "80a389f9-98bd-434e-be51-e34c65ff7cf6",
+      "name": "Qwen Cloud Chat Model2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -576,
+        -864
+      ],
+      "id": "8c55416c-75ce-4a01-b494-d439721b2fef",
+      "name": "When chat message received"
+    }
+  ]
+}
