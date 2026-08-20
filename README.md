@@ -28,6 +28,9 @@ It also includes a controlled **data deletion pipeline** that allows indexed vid
 ---
 
 ## 🏗️ System Architecture
+## 🖼️ Complete Workflow
+
+![Complete YouTube RAG Workflow](Screenshots/workflow-overview.png)
 
 The system is organized into four core pipelines:
 
@@ -150,6 +153,16 @@ Vectorization
 Google Gemini converts transcript chunks into vector embeddings.
 Storage & Logging
 Embeddings are stored in Supabase, while Google Sheets maintains a lightweight index of processed videos.
+## 🔄 1. Transcript Ingestion & Storage
+
+...
+
+### Workflow
+
+On Form Submission → Get Transcript → Processing → Embeddings → Supabase → Google Sheets
+
+![Transcript Ingestion Pipeline](Screenshots/transcript-pipeline.png)
+
 
 🧠 2. General YouTube RAG Agent
 The general RAG pipeline allows users to query the complete indexed YouTube knowledge base.
@@ -177,6 +190,11 @@ Grounded Response
 
 The agent retrieves relevant transcript chunks from Supabase and uses Cohere reranking to improve the relevance of the retrieved context before generating the final response with Qwen.
 Responses are grounded in retrieved transcript content and preserve source metadata such as video title, timestamp, and URL.
+## 🧠 2. General YouTube RAG Agent
+
+...
+
+![General YouTube RAG Agent](Screenshots/rag-agent.png)
 
 🎥 3. Metadata-Filtered RAG Agent
 The metadata-filtered pipeline is designed for questions about a specific YouTube video.
@@ -221,6 +239,12 @@ Relevant Context
 
 This provides more precise video-specific answers and reduces cross-video context mixing.
 
+## 🎥 3. Metadata-Filtered RAG Agent
+
+...
+
+![Metadata-Filtered RAG Agent](Screenshots/metadata-filter-rag.png)
+
 🗑️ 4. Transcript Deletion & Cleanup
 The deletion pipeline provides lifecycle management for indexed transcripts.
 
@@ -262,18 +286,12 @@ Reranking	Cohere
 Knowledge Base Management	Google Sheets
 Data Processing	JavaScript / n8n Code Nodes
 Architecture	Retrieval-Augmented Generation (RAG)
+## 🗑️ 4. Transcript Deletion & Cleanup
 
+...
 
-📸 Screenshots
-Complete Workflow
+![Transcript Deletion Pipeline](Screenshots/delete-pipeline.png)
 
-Transcript Ingestion Pipeline
-
-General RAG Agent
-
-Metadata-Filtered RAG Agent
-
-Delete & Cleanup Pipeline
 
 📁 Project Structure
 
