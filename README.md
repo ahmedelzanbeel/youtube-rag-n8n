@@ -505,16 +505,22 @@ Each major responsibility is isolated into a dedicated workflow section, making 
 
 # 🎬 Demo
 
-A full project demonstration will be added soon.
+A complete 6:20 walkthrough of the YouTube RAG system.
 
-The upcoming demo will cover:
+**▶️ [Watch the Full Demo](https://drive.google.com/file/d/1v9xoJ_RIcZBB8CW0hBcTS0JDME6NUmi4/view?usp=sharing)**
 
-- Transcript ingestion
-- Transcript processing
-- Vector storage
+The demo covers:
+
+- YouTube video submission
+- Transcript extraction
+- Timestamp-aware chunking
+- Gemini embeddings
+- Supabase vector storage
 - General RAG querying
-- Metadata-filtered querying
-- Transcript deletion
+- Metadata-filtered retrieval
+- Cohere reranking
+- Qwen-powered responses
+- Controlled transcript deletion
 
 # 👨‍💻 Author
 
